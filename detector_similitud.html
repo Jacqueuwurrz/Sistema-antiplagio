@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similitud de Textos y Máquinas de Turing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .tab:hover {
+            background: #0056b3;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .input-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+        }
+        
+        .button-group {
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+        }
+        
+        .results {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .similarity-meter {
+            background: #e9ecef;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .similarity-bar {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 1s ease;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+        }
+        
+        .similarity-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .turing-machine {
+            background: #2c3e50;
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+        
+        .turing-machine h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .tape {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 2px;
+        }
+        
+        .tape-cell {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            color: #2c3e50;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .tape-head {
+            background: #e74c3c !important;
+            color: white !important;
+        }
+        
+        .state-info {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 18px;
+        }
+        
+        .theory-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+        
+        .theory-section h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .formula {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .ethical-section {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+        
+        .ethical-section h4 {
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .algorithm-steps {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+            margin: 20px 0;
+        }
+        
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .step-number {
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Similitud de Textos y Máquinas de Turing</h1>
+            <p>Sistema inteligente para detección de similitud basado en principios de computabilidad</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('detector')">🔍 Detector</button>
+                <button class="tab" onclick="showTab('turing')">⚙️ Máquina de Turing</button>
+                <button class="tab" onclick="showTab('theory')">📚 Teoría</button>
+                <button class="tab" onclick="showTab('ethics')">⚖️ Ética</button>
+            </div>
+            
+            <!-- DETECTOR TAB -->
+            <div id="detector" class="tab-content active">
+                <div class="input-section">
+                    <h3>📝 Texto 1 (Original)</h3>
+                    <textarea id="text1" placeholder="Ingrese el primer texto aquí..."></textarea>
+                </div>
+                
+                <div class="input-section">
+                    <h3>📄 Texto 2 (Comparación)</h3>
+                    <textarea id="text2" placeholder="Ingrese el segundo texto aquí..."></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn" onclick="analyzeTexts()">🔍 Analizar Similitud</button>
+                    <button class="btn" onclick="loadExamples()">📋 Cargar Ejemplos</button>
+                </div>
+                
+                <div id="results" class="results" style="display: none;">
+                    <h3>📊 Resultados del Análisis</h3>
+                    <div class="similarity-meter">
+                        <div id="similarityBar" class="similarity-bar" style="width: 0%;"></div>
+                        <div class="similarity-text" id="similarityText">0%</div>
+                    </div>
+                    <div id="analysisDetails"></div>
+                    <div id="turingDecision"></div>
+                </div>
+                
+                <div class="algorithm-steps">
+                    <h4>🔄 Proceso de Análisis</h4>
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <strong>Preprocesamiento:</strong> Limpieza y normalización de textos
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <strong>Tokenización:</strong> División en palabras y n-gramas
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <strong>Vectorización:</strong> Conversión a representación numérica
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <strong>Cálculo de Similitud:</strong> Métricas de Jaccard, Coseno y Levenshtein
+                    </div>
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <strong>Decisión MT:</strong> Evaluación según umbral definido
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TURING MACHINE TAB -->
+            <div id="turing" class="tab-content">
+                <div class="turing-machine">
+                    <h3>⚙️ Simulador de Máquina de Turing</h3>
+                    <p><strong>Lenguaje:</strong> L = { w#x | similitud(w,x) ≥ k }</p>
+                    
+                    <div class="state-info">
+                        <strong>Estado actual:</strong> <span id="currentState">q₀</span> | 
+                        <strong>Posición:</strong> <span id="headPosition">0</span>
+                    </div>
+                    
+                    <div class="tape" id="turingTape">
+                        <!-- Cinta se genera dinámicamente -->
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn" onclick="stepTuring()">➡️ Paso</button>
+                        <button class="btn" onclick="runTuring()">▶️ Ejecutar</button>
+                        <button class="btn" onclick="resetTuring()">🔄 Reiniciar</button>
+                    </div>
+                    
+                    <div id="turingLog" style="background: #34495e; padding: 15px; border-radius: 10px; margin-top: 20px; font-family: 'Courier New', monospace; max-height: 200px; overflow-y: auto;"></div>
+                </div>
+                
+                <div class="theory-section">
+                    <h4>🧮 Definición Formal de la MT</h4>
+                    <div class="formula">
+                        M = (Q, Σ, Γ, δ, q₀, B, F)
+                    </div>
+                    <ul>
+                        <li><strong>Q:</strong> {q₀, q₁, q₂, q₃, q_accept, q_reject}</li>
+                        <li><strong>Σ:</strong> {0, 1, #} (alfabeto de entrada)</li>
+                        <li><strong>Γ:</strong> {0, 1, #, B} (alfabeto de la cinta)</li>
+                        <li><strong>δ:</strong> Función de transición para calcular similitud</li>
+                        <li><strong>q₀:</strong> Estado inicial</li>
+                        <li><strong>B:</strong> Símbolo en blanco</li>
+                        <li><strong>F:</strong> {q_accept} (estados de aceptación)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- THEORY TAB -->
+            <div id="theory" class="tab-content">
+                <div class="theory-section">
+                    <h4>🎯 Objetivos de Aprendizaje</h4>
+                    <ul>
+                        <li>✅ Comprender el modelo de Máquina de Turing y su relevancia</li>
+                        <li>✅ Aplicar técnicas de NLP para comparar textos académicos</li>
+                        <li>✅ Desarrollar un prototipo funcional usando IA</li>
+                        <li>✅ Analizar éticamente el uso de tecnología para detección de plagio</li>
+                    </ul>
+                </div>
+                
+                <div class="theory-section">
+                    <h4>🔬 Técnicas de NLP Implementadas</h4>
+                    
+                    <h5>1. Similitud de Jaccard</h5>
+                    <div class="formula">
+                        J(A,B) = |A ∩ B| / |A ∪ B|
+                    </div>
+                    <p>Mide la similitud entre conjuntos de palabras basada en intersección y unión.</p>
+                    
+                    <h5>2. Similitud del Coseno</h5>
+                    <div class="formula">
+                        cos(θ) = (A · B) / (||A|| × ||B||)
+                    </div>
+                    <p>Calcula el ángulo entre vectores de características de los textos.</p>
+                    
+                    <h5>3. Distancia de Levenshtein</h5>
+                    <div class="formula">
+                        lev(a,b) = min(inserción, eliminación, sustitución)
+                    </div>
+                    <p>Mide las operaciones mínimas para transformar un texto en otro.</p>
+                </div>
+                
+                <div class="theory-section">
+                    <h4>🧠 Conexión con Máquinas de Turing</h4>
+                    <p>Las Máquinas de Turing proporcionan el marco teórico fundamental para entender:</p>
+                    <ul>
+                        <li><strong>Computabilidad:</strong> ¿Qué problemas pueden resolverse algorítmicamente?</li>
+                        <li><strong>Complejidad:</strong> ¿Cuántos recursos requiere la solución?</li>
+                        <li><strong>Decidibilidad:</strong> ¿Puede determinarse si dos textos son similares?</li>
+                        <li><strong>Límites:</strong> ¿Qué tan precisa puede ser la detección automática?</li>
+                    </ul>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%;"></div>
+                </div>
+                <p style="text-align: center; margin-top: 10px;">Progreso del proyecto: 75%</p>
+            </div>
+            
+            <!-- ETHICS TAB -->
+            <div id="ethics" class="tab-content">
+                <div class="ethical-section">
+                    <h4>⚖️ Consideraciones Éticas</h4>
+                    <p>El uso de sistemas automatizados para detección de similitud plantea importantes cuestiones éticas:</p>
+                </div>
+                
+                <div class="theory-section">
+                    <h4>🚨 Riesgos y Limitaciones</h4>
+                    <ul>
+                        <li><strong>Falsos Positivos:</strong> Textos originales marcados como plagio</li>
+                        <li><strong>Falsos Negativos:</strong> Plagio real no detectado</li>
+                        <li><strong>Sesgo Cultural:</strong> Preferencia por ciertos estilos de escritura</li>
+                        <li><strong>Privacidad:</strong> Almacenamiento y procesamiento de textos académicos</li>
+                        <li><strong>Dependencia Tecnológica:</strong> Sustitución del juicio humano</li>
+                    </ul>
+                </div>
+                
+                <div class="theory-section">
+                    <h4>✅ Buenas Prácticas</h4>
+                    <ul>
+                        <li><strong>Transparencia:</strong> Explicar cómo funciona el algoritmo</li>
+                        <li><strong>Revisión Humana:</strong> Siempre incluir evaluación experta</li>
+                        <li><strong>Mejora Continua:</strong> Actualizar y refinar el sistema</li>
+                        <li><strong>Educación:</strong> Enseñar sobre integridad académica</li>
+                        <li><strong>Contexto:</strong> Considerar el propósito y audiencia del texto</li>
+                    </ul>
+                </div>
+                
+                <div class="theory-section">
+                    <h4>🤔 Pregunta de Reflexión</h4>
+                    <div style="background: #fff3cd; padding: 20px; border-radius: 10px; border-left: 4px solid #ffc107;">
+                        <strong>¿Qué nos enseña la Máquina de Turing sobre los límites y posibilidades del reconocimiento automático en lenguaje natural?</strong>
+                        <p style="margin-top: 15px;">
+                            La teoría de Máquinas de Turing nos muestra que aunque muchos problemas son computables, 
+                            existen limitaciones fundamentales en lo que puede automatizarse. En el contexto de NLP, 
+                            esto significa que aunque podemos detectar similitudes textuales con alta precisión, 
+                            la comprensión del contexto, intención y significado profundo sigue requiriendo 
+                            intervención humana.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado global del sistema
+        let currentTab = 'detector';
+        let turingState = 'q0';
+        let turingTape = [];
+        let headPosition = 0;
+        let turingLog = [];
+        
+        // Datos de ejemplo para demostración
+        const examples = {
+            plagiarism: {
+                text1: "La inteligencia artificial es una rama de la informática que se ocupa de la automatización del comportamiento inteligente. Los sistemas de IA pueden realizar tareas que típicamente requieren inteligencia humana, como el reconocimiento de patrones, la toma de decisiones y el procesamiento del lenguaje natural.",
+                text2: "La inteligencia artificial representa una disciplina de la informática enfocada en automatizar comportamientos inteligentes. Estos sistemas pueden ejecutar tareas que normalmente necesitan inteligencia humana, incluyendo reconocimiento de patrones, toma de decisiones y procesamiento de lenguaje natural."
+            },
+            original: {
+                text1: "Las máquinas de Turing son modelos matemáticos de computación que definen un dispositivo abstracto capaz de manipular símbolos en una cinta de acuerdo con una tabla de reglas.",
+                text2: "Los algoritmos de aprendizaje automático utilizan técnicas estadísticas para permitir que las computadoras mejoren su rendimiento en una tarea específica sin ser programadas explícitamente."
+            }
+        };
+        
+        // Funciones de navegación
+        function showTab(tabName) {
+            // Ocultar todas las pestañas
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Mostrar pestaña seleccionada
+            document.getElementById(tabName).classList.add('active');
+            
+            // Actualizar botones
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+        
+        // Función principal de análisis
+        function analyzeTexts() {
+            const text1 = document.getElementById('text1').value.trim();
+            const text2 = document.getElementById('text2').value.trim();
+            
+            if (!text1 || !text2) {
+                alert('Por favor, ingrese ambos textos para comparar.');
+                return;
+            }
+            
+            // Mostrar resultados
+            document.getElementById('results').style.display = 'block';
+            
+            // Calcular similitudes
+            const similarities = calculateSimilarities(text1, text2);
+            const avgSimilarity = (similarities.jaccard + similarities.cosine + similarities.levenshtein) / 3;
+            
+            // Actualizar interfaz
+            updateSimilarityDisplay(avgSimilarity * 100, similarities);
+            
+            // Decisión de la Máquina de Turing
+            const threshold = 0.6; // 60% de similitud
+            const turingDecision = avgSimilarity >= threshold ? 'RECHAZAR' : 'ACEPTAR';
+            updateTuringDecision(turingDecision, avgSimilarity, threshold);
+            
+            // Preparar cinta para MT
+            prepareTuringTape(text1, text2, avgSimilarity);
+        }
+        
+        // Cálculo de similitudes
+        function calculateSimilarities(text1, text2) {
+            // Preprocesamiento
+            const processedText1 = preprocessText(text1);
+            const processedText2 = preprocessText(text2);
+            
+            // Similitud de Jaccard
+            const jaccard = calculateJaccard(processedText1, processedText2);
+            
+            // Similitud del Coseno
+            const cosine = calculateCosine(processedText1, processedText2);
+            
+            // Similitud basada en Levenshtein (inversa)
+            const levenshtein = calculateLevenshteinSimilarity(text1, text2);
+            
+            return { jaccard, cosine, levenshtein };
+        }
+        
+        function preprocessText(text) {
+            return text.toLowerCase()
+                      .replace(/[^\w\s]/g, '')
+                      .split(/\s+/)
+                      .filter(word => word.length > 0);
+        }
+        
+        function calculateJaccard(words1, words2) {
+            const set1 = new Set(words1);
+            const set2 = new Set(words2);
+            const intersection = new Set([...set1].filter(x => set2.has(x)));
+            const union = new Set([...set1, ...set2]);
+            return intersection.size / union.size;
+        }
+        
+        function calculateCosine(words1, words2) {
+            const allWords = [...new Set([...words1, ...words2])];
+            const vector1 = allWords.map(word => words1.filter(w => w === word).length);
+            const vector2 = allWords.map(word => words2.filter(w => w === word).length);
+            
+            const dotProduct = vector1.reduce((sum, val, i) => sum + val * vector2[i], 0);
+            const magnitude1 = Math.sqrt(vector1.reduce((sum, val) => sum + val * val, 0));
+            const magnitude2 = Math.sqrt(vector2.reduce((sum, val) => sum + val * val, 0));
+            
+            return dotProduct / (magnitude1 * magnitude2) || 0;
+        }
+        
+        function calculateLevenshteinSimilarity(str1, str2) {
+            const distance = levenshteinDistance(str1, str2);
+            const maxLength = Math.max(str1.length, str2.length);
+            return 1 - (distance / maxLength);
+        }
+        
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            return matrix[str2.length][str1.length];
+        }
+        
+        // Actualización de la interfaz
+        function updateSimilarityDisplay(percentage, similarities) {
+            const bar = document.getElementById('similarityBar');
+            const text = document.getElementById('similarityText');
+            const details = document.getElementById('analysisDetails');
+            
+            bar.style.width = percentage + '%';
+            text.textContent = percentage.toFixed(1) + '%';
+            
+            details.innerHTML = `
+                <h4>📈 Desglose de Métricas:</h4>
+                <p><strong>Similitud de Jaccard:</strong> ${(similarities.jaccard * 100).toFixed(1)}%</p>
+                <p><strong>Similitud del Coseno:</strong> ${(similarities.cosine * 100).toFixed(1)}%</p>
+                <p><strong>Similitud de Levenshtein:</strong> ${(similarities.levenshtein * 100).toFixed(1)}%</p>
+                <p><strong>Promedio:</strong> ${percentage.toFixed(1)}%</p>
+            `;
+        }
+        
+        function updateTuringDecision(decision, similarity, threshold) {
+            const decisionDiv = document.getElementById('turingDecision');
+            const color = decision === 'ACEPTAR' ? '#28a745' : '#dc3545';
+            
+            decisionDiv.innerHTML = `
+                <div style="background: ${color}; color: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h4>🤖 Decisión de la Máquina de Turing</h4>
+                    <p><strong>Resultado:</strong> ${decision}</p>
+                    <p><strong>Similitud:</strong> ${(similarity * 100).toFixed(1)}%</p>
+                    <p><strong>Umbral:</strong> ${(threshold * 100)}%</p>
+                    <p><strong>Interpretación:</strong> 
+                        ${decision === 'ACEPTAR' ? 
+                          'Los textos son suficientemente diferentes (posiblemente originales)' : 
+                          'Los textos son muy similares (posible plagio detectado)'}
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Funciones de la Máquina de Turing
+        function prepareTuringTape(text1, text2, similarity) {
+            // Convertir similitud a representación binaria
+            const similarityBinary = Math.floor(similarity * 100).toString(2).padStart(8, '0');
+            const separator = '#';
+            const threshold = '00111100'; // 60 en binario
+            
+            // Crear cinta: similitud#umbral
+            turingTape = [...similarityBinary, separator, ...threshold];
+            headPosition = 0;
+            turingState = 'q0';
+            turingLog = [];
+            
+            updateTuringDisplay();
+            logTuringStep('Cinta inicializada', `Similitud: ${similarityBinary} (${Math.floor(similarity * 100)}%), Umbral: ${threshold} (60%)`);
+        }
+        
+        function updateTuringDisplay() {
+            const tapeDiv = document.getElementById('turingTape');
+            tapeDiv.innerHTML = '';
+            
+            // Crear celdas de la cinta
+            for (let i = 0; i < turingTape.length; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'tape-cell';
+                if (i === headPosition) {
+                    cell.classList.add('tape-head');
+                }
+                cell.textContent = turingTape[i] || 'B';
+                tapeDiv.appendChild(cell);
+            }
+            
+            // Actualizar estado
+            document.getElementById('currentState').textContent = turingState;
+            document.getElementById('headPosition').textContent = headPosition;
+        }
+        
+        function stepTuring() {
+            if (turingState === 'q_accept' || turingState === 'q_reject') {
+                logTuringStep('Máquina detenida', `Estado final: ${turingState}`);
+                return;
+            }
+            
+            const currentSymbol = turingTape[headPosition] || 'B';
+            const transition = getTuringTransition(turingState, currentSymbol);
+            
+            if (transition) {
+                // Aplicar transición
+                turingTape[headPosition] = transition.write;
+                turingState = transition.nextState;
+                headPosition += transition.move === 'R' ? 1 : -1;
+                
+                // Asegurar que la cinta tenga suficiente espacio
+                if (headPosition < 0) {
+                    turingTape.unshift('B');
+                    headPosition = 0;
+                } else if (headPosition >= turingTape.length) {
+                    turingTape.push('B');
+                }
+                
+                logTuringStep(`Transición aplicada`, `${transition.state}(${currentSymbol}) → ${transition.nextState}, escribir: ${transition.write}, mover: ${transition.move}`);
+                updateTuringDisplay();
+            } else {
+                turingState = 'q_reject';
+                logTuringStep('Transición no definida', 'Estado rechazado');
+                updateTuringDisplay();
+            }
+        }
+        
+        function getTuringTransition(state, symbol) {
+            // Definición simplificada de transiciones para comparar similitud vs umbral
+            const transitions = {
+                'q0': {
+                    '0': { nextState: 'q1', write: 'X', move: 'R' },
+                    '1': { nextState: 'q2', write: 'Y', move: 'R' },
+                    '#': { nextState: 'q3', write: '#', move: 'R' }
+                },
+                'q1': {
+                    '0': { nextState: 'q1', write: '0', move: 'R' },
+                    '1': { nextState: 'q1', write: '1', move: 'R' },
+                    '#': { nextState: 'q3', write: '#', move: 'R' }
+                },
+                'q2': {
+                    '0': { nextState: 'q2', write: '0', move: 'R' },
+                    '1': { nextState: 'q2', write: '1', move: 'R' },
+                    '#': { nextState: 'q3', write: '#', move: 'R' }
+                },
+                'q3': {
+                    '0': { nextState: 'q_accept', write: '0', move: 'R' },
+                    '1': { nextState: 'q_reject', write: '1', move: 'R' },
+                    'B': { nextState: 'q_accept', write: 'B', move: 'R' }
+                }
+            };
+            
+            return transitions[state] && transitions[state][symbol] ? 
+                   { ...transitions[state][symbol], state: state } : null;
+        }
+        
+        function runTuring() {
+            const maxSteps = 50;
+            let steps = 0;
+            
+            const interval = setInterval(() => {
+                if (turingState === 'q_accept' || turingState === 'q_reject' || steps >= maxSteps) {
+                    clearInterval(interval);
+                    if (steps >= maxSteps) {
+                        logTuringStep('Máximo de pasos alcanzado', 'Ejecución detenida');
+                    }
+                    return;
+                }
+                
+                stepTuring();
+                steps++;
+            }, 800);
+        }
+        
+        function resetTuring() {
+            turingTape = [];
+            headPosition = 0;
+            turingState = 'q0';
+            turingLog = [];
+            updateTuringDisplay();
+            document.getElementById('turingLog').innerHTML = '';
+        }
+        
+        function logTuringStep(action, details) {
+            turingLog.push(`${action}: ${details}`);
+            const logDiv = document.getElementById('turingLog');
+            logDiv.innerHTML = turingLog.map((entry, index) => 
+                `<div style="margin: 5px 0; color: #ecf0f1;">[${index + 1}] ${entry}</div>`
+            ).join('');
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Función para cargar ejemplos
+        function loadExamples() {
+            const choice = confirm('¿Cargar ejemplo de PLAGIO (Aceptar) o TEXTOS ORIGINALES (Cancelar)?');
+            const example = choice ? examples.plagiarism : examples.original;
+            
+            document.getElementById('text1').value = example.text1;
+            document.getElementById('text2').value = example.text2;
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar ejemplo inicial
+            document.getElementById('text1').value = examples.plagiarism.text1;
+            document.getElementById('text2').value = examples.plagiarism.text2;
+            
+            // Mensaje de bienvenida
+            console.log('🎓 Sistema de Similitud de Textos y Máquinas de Turing inicializado');
+            console.log('📚 Proyecto didáctico para comprensión de NLP y Teoría de Computación');
+        });
+        
+        // Funciones adicionales para mejorar la experiencia
+        function highlightDifferences(text1, text2) {
+            // Función para resaltar diferencias entre textos
+            const words1 = text1.split(' ');
+            const words2 = text2.split(' ');
+            
+            // Implementación básica de diff
+            // En una implementación completa, usaríamos algoritmos más sofisticados
+            return {
+                highlighted1: words1.map(word => ({ word, common: words2.includes(word) })),
+                highlighted2: words2.map(word => ({ word, common: words1.includes(word) }))
+            };
+        }
+        
+        function generateReport() {
+            // Función para generar reporte detallado
+            const timestamp = new Date().toLocaleString('es-MX');
+            return {
+                timestamp,
+                analysis: 'Análisis completo de similitud textual',
+                recommendation: 'Revisar manualmente los resultados para confirmación'
+            };
+        }
+        
+        // Eventos de teclado para mejorar UX
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (currentTab === 'detector') {
+                    analyzeTexts();
+                } else if (currentTab === 'turing') {
+                    stepTuring();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
