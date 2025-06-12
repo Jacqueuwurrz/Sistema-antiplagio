@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClimBot - Tu Asistente del Clima</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chat-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .weather-info {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .weather-main {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .weather-icon {
+            font-size: 2.5rem;
+        }
+
+        .weather-details {
+            text-align: right;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .bot-avatar {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .bot-message {
+            background: #f1f3f5;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 16px;
+            background: #f1f3f5;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            max-width: 70px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #adb5bd;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            background: rgba(79, 172, 254, 0.1);
+            color: #4facfe;
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-btn:hover {
+            background: #4facfe;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🌤️ ClimBot</h1>
+            <p>Tu asistente personal del clima</p>
+            <div class="weather-info" id="weatherInfo">
+                <div class="weather-main">
+                    <div class="weather-icon">⛅</div>
+                    <div>
+                        <div style="font-size: 1.2rem; font-weight: bold;">22°C</div>
+                        <div style="font-size: 0.9rem;">Parcialmente nublado</div>
+                    </div>
+                </div>
+                <div class="weather-details">
+                    <div>Ciudad de México</div>
+                    <div style="font-size: 0.8rem;">Actualizado hace 5 min</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message">
+                <div class="message-avatar bot-avatar">🤖</div>
+                <div class="message-content bot-message">
+                    ¡Hola! Soy ClimBot, tu asistente del clima. Puedo ayudarte con información meteorológica, pronósticos y consejos sobre el clima. ¿En qué puedo ayudarte hoy?
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="sendQuickMessage('¿Cómo está el clima hoy?')">Clima hoy</button>
+                <button class="quick-btn" onclick="sendQuickMessage('Pronóstico de la semana')">Pronóstico 7 días</button>
+                <button class="quick-btn" onclick="sendQuickMessage('¿Lloverá mañana?')">¿Lloverá?</button>
+                <button class="quick-btn" onclick="sendQuickMessage('Consejos para vestirse')">Qué ponerme</button>
+            </div>
+            <div class="input-group">
+                <input type="text" class="input-field" id="messageInput" placeholder="Pregúntame sobre el clima..." maxlength="500">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Datos simulados del clima
+        const weatherData = {
+            current: {
+                temperature: 22,
+                condition: 'Parcialmente nublado',
+                humidity: 65,
+                windSpeed: 12,
+                uvIndex: 6,
+                icon: '⛅'
+            },
+            forecast: [
+                { day: 'Hoy', temp: '22°/15°', condition: 'Parcialmente nublado', icon: '⛅' },
+                { day: 'Mañana', temp: '25°/18°', condition: 'Soleado', icon: '☀️' },
+                { day: 'Miércoles', temp: '20°/12°', condition: 'Lluvia', icon: '🌧️' },
+                { day: 'Jueves', temp: '23°/16°', condition: 'Nublado', icon: '☁️' },
+                { day: 'Viernes', temp: '26°/19°', condition: 'Soleado', icon: '☀️' }
+            ]
+        };
+
+        // Respuestas del chatbot
+        const botResponses = {
+            'clima hoy': 'Hoy tenemos un día parcialmente nublado con una temperatura de 22°C. La humedad está en 65% y hay vientos ligeros de 12 km/h. ¡Perfecto para salir! 🌤️',
+            'temperatura': `La temperatura actual es de ${weatherData.current.temperature}°C. Se siente bastante agradable para esta época del año.`,
+            'lluvia': 'Para mañana no se espera lluvia, pero el miércoles sí hay probabilidad de precipitaciones. Te recomiendo llevar paraguas si sales ese día. ☔',
+            'pronostico': 'Aquí tienes el pronóstico de los próximos días:\n\n🌤️ Hoy: 22°/15° - Parcialmente nublado\n☀️ Mañana: 25°/18° - Soleado\n🌧️ Miércoles: 20°/12° - Lluvia\n☁️ Jueves: 23°/16° - Nublado\n☀️ Viernes: 26°/19° - Soleado',
+            'vestirse': 'Con la temperatura actual de 22°C, te recomiendo ropa ligera como una camiseta y pantalón cómodo. Si sales por la noche, lleva una chaqueta ligera ya que baja a 15°C. 👕',
+            'viento': `Actualmente hay vientos de ${weatherData.current.windSpeed} km/h. Son vientos ligeros, nada preocupante para las actividades al aire libre.`,
+            'humedad': `La humedad relativa está en ${weatherData.current.humidity}%. Es un nivel moderadamente cómodo.`,
+            'uv': `El índice UV actual es ${weatherData.current.uvIndex}, que es moderado-alto. Te recomiendo usar protector solar si vas a estar al sol. ☀️🧴`
+        };
+
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendQuickMessage(message) {
+            messageInput.value = message;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Agregar mensaje del usuario
+            addMessage(message, 'user');
+            messageInput.value = '';
+            sendBtn.disabled = true;
+
+            // Mostrar indicador de escritura
+            showTypingIndicator();
+
+            // Simular respuesta del bot después de un delay
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = getBotResponse(message);
+                addMessage(response, 'bot');
+                sendBtn.disabled = false;
+            }, 1500 + Math.random() * 1000);
+        }
+
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `message-avatar ${sender}-avatar`;
+            avatar.textContent = sender === 'user' ? '👤' : '🤖';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = `message-content ${sender}-message`;
+            messageContent.textContent = content;
+            
+            if (sender === 'user') {
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(avatar);
+            } else {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message';
+            typingDiv.id = 'typingIndicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar bot-avatar';
+            avatar.textContent = '🤖';
+            
+            const typingContent = document.createElement('div');
+            typingContent.className = 'typing-indicator';
+            typingContent.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            
+            typingDiv.appendChild(avatar);
+            typingDiv.appendChild(typingContent);
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typing = document.getElementById('typingIndicator');
+            if (typing) {
+                typing.remove();
+            }
+        }
+
+        function getBotResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Buscar palabras clave en el mensaje
+            for (const [keyword, response] of Object.entries(botResponses)) {
+                if (lowerMessage.includes(keyword)) {
+                    return response;
+                }
+            }
+            
+            // Respuestas por patrones
+            if (lowerMessage.includes('hola') || lowerMessage.includes('hola')) {
+                return '¡Hola! 👋 Estoy aquí para ayudarte con información del clima. ¿Qué te gustaría saber?';
+            }
+            
+            if (lowerMessage.includes('gracias')) {
+                return '¡De nada! 😊 Si necesitas más información sobre el clima, no dudes en preguntar.';
+            }
+            
+            if (lowerMessage.includes('adiós') || lowerMessage.includes('chao')) {
+                return '¡Hasta luego! 👋 Que tengas un excelente día y cuídate del clima.';
+            }
+            
+            // Respuesta por defecto
+            return 'Interesante pregunta. Te puedo ayudar con información sobre el clima actual, pronósticos, consejos para vestirse según el clima, y más. ¿Hay algo específico sobre el clima que te gustaría saber? 🌤️';
+        }
+
+        // Actualizar información del clima cada 5 minutos (simulado)
+        function updateWeatherInfo() {
+            const weatherInfo = document.getElementById('weatherInfo');
+            const temp = 20 + Math.random() * 10; // Temperatura aleatoria entre 20-30°C
+            
+            weatherInfo.innerHTML = `
+                <div class="weather-main">
+                    <div class="weather-icon">${weatherData.current.icon}</div>
+                    <div>
+                        <div style="font-size: 1.2rem; font-weight: bold;">${Math.round(temp)}°C</div>
+                        <div style="font-size: 0.9rem;">${weatherData.current.condition}</div>
+                    </div>
+                </div>
+                <div class="weather-details">
+                    <div>Ciudad de México</div>
+                    <div style="font-size: 0.8rem;">Actualizado ahora</div>
+                </div>
+            `;
+        }
+
+        // Simular actualización del clima cada 5 minutos
+        setInterval(updateWeatherInfo, 300000);
+    </script>
+</body>
+</html>

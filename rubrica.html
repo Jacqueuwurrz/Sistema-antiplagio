@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestión de Rúbricas</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      background: #fff;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    h2, h3 {
+      color: #333;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    .criterion {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .criterion input {
+      flex: 1;
+    }
+    .btn {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .btn-danger {
+      background-color: #dc3545;
+    }
+    .btn-success {
+      background-color: #28a745;
+    }
+    .rubric-preview {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e9f7ef;
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    table, th, td {
+      border: 1px solid #999;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    .download {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📝 Sistema de Gestión de Rúbricas</h2>
+
+    <div class="input-group">
+      <label for="rubricName">Nombre de la Rúbrica:</label>
+      <input type="text" id="rubricName" placeholder="Ej. Evaluación de Proyecto Final" />
+    </div>
+
+    <div id="criteriaList"></div>
+    <button class="btn" onclick="addCriterion()">+ Añadir Criterio</button>
+    <button class="btn btn-success" onclick="approveRubric()">✅ Aprobar Rúbrica</button>
+
+    <div class="rubric-preview" id="preview" style="display:none;"></div>
+
+    <div class="download">
+      <button class="btn" onclick="downloadHTML()">⬇ Descargar Rúbrica (HTML)</button>
+      <button class="btn" onclick="printRubric()">🖨 Imprimir / Guardar como PDF</button>
+    </div>
+  </div>
+
+  <script>
+    let criteria = [];
+
+    function addCriterion() {
+      const id = Date.now();
+      criteria.push({ id, name: "", score: 0 });
+      renderCriteria();
+    }
+
+    function updateCriterion(id, field, value) {
+      const crit = criteria.find(c => c.id === id);
+      crit[field] = value;
+    }
+
+    function removeCriterion(id) {
+      criteria = criteria.filter(c => c.id !== id);
+      renderCriteria();
+    }
+
+    function renderCriteria() {
+      const container = document.getElementById("criteriaList");
+      container.innerHTML = "";
+      criteria.forEach(c => {
+        container.innerHTML += `
+          <div class="criterion">
+            <input type="text" placeholder="Nombre del criterio" value="${c.name}" onchange="updateCriterion(${c.id}, 'name', this.value)" />
+            <input type="number" placeholder="Puntaje" value="${c.score}" onchange="updateCriterion(${c.id}, 'score', this.value)" min="0" />
+            <button class="btn btn-danger" onclick="removeCriterion(${c.id})">✖</button>
+          </div>
+        `;
+      });
+    }
+
+    function approveRubric() {
+      const name = document.getElementById("rubricName").value.trim();
+      if (!name || criteria.length === 0) {
+        alert("Debes ingresar un nombre y al menos un criterio.");
+        return;
+      }
+
+      let html = `<h3>Rúbrica Aprobada: ${name}</h3><table><tr><th>Criterio</th><th>Puntaje</th></tr>`;
+      criteria.forEach(c => {
+        html += `<tr><td>${c.name}</td><td>${c.score}</td></tr>`;
+      });
+      html += `</table>`;
+
+      const preview = document.getElementById("preview");
+      preview.innerHTML = html;
+      preview.style.display = "block";
+    }
+
+    function downloadHTML() {
+      const name = document.getElementById("rubricName").value.trim() || "rubrica";
+      const blob = new Blob([document.getElementById("preview").innerHTML], { type: "text/html" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${name.replace(/\s+/g, "_")}.html`;
+      link.click();
+    }
+
+    function printRubric() {
+      const content = document.getElementById("preview").innerHTML;
+      const win = window.open('', '', 'width=800,height=600');
+      win.document.write('<html><head><title>Rúbrica</title></head><body>');
+      win.document.write(content);
+      win.document.write('</body></html>');
+      win.document.close();
+      win.print();
+    }
+  </script>
+</body>
+</html>

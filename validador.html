@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>  
+  <meta charset="UTF-8">
+  <title>Validador de Formularios Inteligente</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: auto; }
+    label, input { display: block; margin-bottom: 10px; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Formulario de Validación</h1>
+  <form id="formulario">
+    <label>Nombre completo:</label>
+    <input type="text" id="nombre">
+    <label>Correo electrónico:</label>
+    <input type="email" id="correo">
+    <label>Teléfono (10 dígitos):</label>
+    <input type="text" id="telefono">
+    <label>CURP:</label>
+    <input type="text" id="curp">
+    <label>RFC:</label>
+    <input type="text" id="rfc">
+    <button type="submit">Validar</button>
+    <p id="errores" class="error"></p>
+  </form>
+
+  <script>
+    const expresiones = {
+      nombre: /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(\s[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$/,
+      correo: /^[\w.-]+@[\w.-]+\.\w{2,4}$/,
+      telefono: /^\d{10}$/,
+      curp: /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$/,
+      rfc: /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/
+    };
+
+    document.getElementById('formulario').addEventListener('submit', function (e) {
+      e.preventDefault();
+      let errores = [];
+
+      if (!expresiones.nombre.test(nombre.value)) errores.push("Nombre inválido.");
+      if (!expresiones.correo.test(correo.value)) errores.push("Correo inválido.");
+      if (!expresiones.telefono.test(telefono.value)) errores.push("Teléfono inválido.");
+      if (!expresiones.curp.test(curp.value)) errores.push("CURP inválido.");
+      if (!expresiones.rfc.test(rfc.value)) errores.push("RFC inválido.");
+
+      document.getElementById('errores').textContent = errores.join(' ');
+      if (errores.length === 0) alert("¡Datos válidos!");
+    });
+  </script>
+</body>
+</html>
